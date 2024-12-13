@@ -9,31 +9,45 @@ export default async function CancelTxn({
 }: {
   searchParams: { [key: string]: string | undefined };
 }) {
-  const transaction = await prisma.transactions.findUnique({
-    where: {
-      status: 2,
-      id: searchParams["txnId"],
-    },
-  });
-  console.log("The transaction is", transaction);
-  if (!transaction) {
+  // Extracting txnId from searchParams
+  const txnId = searchParams["txnId"];
+
+  if (!txnId) {
     return notFound();
   }
-  await prisma.transactions.update({
-    data: {
-      status: 0,
-    },
+
+  // Fetch the transaction using a unique identifier
+  const transaction = await prisma.transactions.findUnique({
     where: {
-      id: searchParams["txnId"],
+      id: txnId,
     },
   });
+
+  console.log("The transaction is", transaction);
+
+  // If the transaction doesn't exist or has a different status, show 404
+  if (!transaction || transaction.status !== 2) {
+    return notFound();
+  }
+
+  // Update the transaction status to 'canceled'
+  await prisma.transactions.update({
+    data: {
+      status: 0, // Assuming 0 indicates 'canceled'
+    },
+    where: {
+      id: txnId,
+    },
+  });
+
+  // Clear transaction-related cache
   clearCache("transactions");
 
   return (
     <div className="h-screen flex justify-center items-center flex-col ">
       <Image src="/images/cancel.png" width={512} height={512} alt="cancel" />
       <h1 className="text-3xl font-bold text-red-400">
-        Payment Canceled by the user
+        Payment Canceled by the User
       </h1>
     </div>
   );

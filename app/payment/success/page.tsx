@@ -10,34 +10,62 @@ export default async function SuccessTxn({
 }: {
   searchParams: { [key: string]: string | undefined };
 }) {
-  const transaction = await prisma.transactions.findUnique({
-    where: {
-      status: 2,
-      id: searchParams["txnId"],
-    },
-  });
-  console.log("The transaction is", transaction);
-  if (!transaction) {
+  const txnId = searchParams["txnId"];
+
+  // Validate txnId
+  if (!txnId) {
     return notFound();
   }
-  await prisma.transactions.update({
-    data: {
-      status: 1,
-    },
-    where: {
-      id: searchParams["txnId"],
-    },
-  });
-  await addCoins(transaction.user_id, getCoinsFromAmount(transaction.amount));
-  clearCache("userCoins");
-  clearCache("transactions");
 
-  return (
-    <div className="h-screen flex justify-center items-center flex-col ">
-      <Image src="/images/check.png" width={512} height={512} alt="cancel" />
-      <h1 className="text-3xl font-bold text-green-400">
-        Payment Processed successfully!
-      </h1>
-    </div>
-  );
+  try {
+    // Fetch the transaction
+    const transaction = await prisma.transactions.findFirst({
+      where: {
+        id: txnId,
+        status: 2, // Ensure the transaction has a status of 2
+      },
+    });
+
+    console.log("The transaction is", transaction);
+
+    // If transaction not found, show 404
+    if (!transaction) {
+      return notFound();
+    }
+
+    // Update the transaction status to 'success' (1)
+    await prisma.transactions.update({
+      data: {
+        status: 1, // Assuming 1 indicates 'success'
+      },
+      where: {
+        id: txnId,
+      },
+    });
+
+    // Add coins to the user's account
+    await addCoins(transaction.user_id, getCoinsFromAmount(transaction.amount));
+
+    // Clear related caches
+    clearCache("userCoins");
+    clearCache("transactions");
+
+    return (
+      <div className="h-screen flex justify-center items-center flex-col ">
+        <Image src="/images/check.png" width={512} height={512} alt="success" />
+        <h1 className="text-3xl font-bold text-green-400">
+          Payment Processed Successfully!
+        </h1>
+      </div>
+    );
+  } catch (error) {
+    console.error("Error processing the transaction:", error);
+    return (
+      <div className="h-screen flex justify-center items-center flex-col ">
+        <h1 className="text-3xl font-bold text-red-400">
+          Something went wrong. Please try again later.
+        </h1>
+      </div>
+    );
+  }
 }
