@@ -9,7 +9,7 @@ import { getServerSession } from "next-auth";
 export default async function Summarize({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | undefined };
+  searchParams: any;
 }) {
   if (!searchParams?.["id"]) {
     return notFound();

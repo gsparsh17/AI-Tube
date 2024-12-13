@@ -8,7 +8,7 @@ import Image from "next/image";
 export default async function SuccessTxn({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | undefined };
+  searchParams: any;
 }) {
   const transaction = await prisma.transactions.findUnique({
     where: {
