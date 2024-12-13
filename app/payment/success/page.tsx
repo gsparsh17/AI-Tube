@@ -8,9 +8,10 @@ import Image from "next/image";
 export default async function SuccessTxn({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | undefined };
+  searchParams: URLSearchParams; // Use URLSearchParams for proper type alignment
 }) {
-  const txnId = searchParams["txnId"];
+  // Extract txnId from searchParams
+  const txnId = searchParams.get("txnId"); // Use `get` method for query params
 
   // Validate txnId
   if (!txnId) {
@@ -51,7 +52,7 @@ export default async function SuccessTxn({
     clearCache("transactions");
 
     return (
-      <div className="h-screen flex justify-center items-center flex-col ">
+      <div className="h-screen flex justify-center items-center flex-col">
         <Image src="/images/check.png" width={512} height={512} alt="success" />
         <h1 className="text-3xl font-bold text-green-400">
           Payment Processed Successfully!
@@ -61,7 +62,7 @@ export default async function SuccessTxn({
   } catch (error) {
     console.error("Error processing the transaction:", error);
     return (
-      <div className="h-screen flex justify-center items-center flex-col ">
+      <div className="h-screen flex justify-center items-center flex-col">
         <h1 className="text-3xl font-bold text-red-400">
           Something went wrong. Please try again later.
         </h1>

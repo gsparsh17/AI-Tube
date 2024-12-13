@@ -7,10 +7,10 @@ import React from "react";
 export default async function CancelTxn({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | undefined };
+  searchParams: URLSearchParams; // Updated type for searchParams
 }) {
   // Extracting txnId from searchParams
-  const txnId = searchParams["txnId"];
+  const txnId = searchParams.get("txnId"); // Use `get` to access query parameters
 
   if (!txnId) {
     return notFound();
@@ -44,7 +44,7 @@ export default async function CancelTxn({
   clearCache("transactions");
 
   return (
-    <div className="h-screen flex justify-center items-center flex-col ">
+    <div className="h-screen flex justify-center items-center flex-col">
       <Image src="/images/cancel.png" width={512} height={512} alt="cancel" />
       <h1 className="text-3xl font-bold text-red-400">
         Payment Canceled by the User
